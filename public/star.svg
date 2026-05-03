@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="starBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7CC4F2"/>
+      <stop offset="100%" stop-color="#3A8FCB"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M32 4 L40 22 L60 24 L45 38 L50 58 L32 48 L14 58 L19 38 L4 24 L24 22 Z"
+    fill="url(#starBody)"
+    stroke="#27719E"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+  <!-- face -->
+  <ellipse cx="26" cy="32" rx="2" ry="2.6" fill="#FFFCF0"/>
+  <ellipse cx="38" cy="32" rx="2" ry="2.6" fill="#FFFCF0"/>
+  <circle cx="26" cy="32.4" r="1" fill="#27719E"/>
+  <circle cx="38" cy="32.4" r="1" fill="#27719E"/>
+  <path
+    d="M26 39 Q32 43 38 39"
+    stroke="#27719E"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <!-- cheek blush -->
+  <circle cx="22" cy="36" r="1.6" fill="#F5B26B" opacity="0.65"/>
+  <circle cx="42" cy="36" r="1.6" fill="#F5B26B" opacity="0.65"/>
+</svg>

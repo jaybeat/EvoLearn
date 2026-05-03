@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* surfaces */
+  --color-surface: 45 50% 96%;
+  --color-surface-secondary: 45 40% 92%;
+  --color-surface-tertiary: 45 35% 88%;
+  --color-surface-hover: 45 40% 90%;
+  --color-surface-elevated: 45 60% 98%;
+
+  /* text */
+  --color-text-primary: 30 14% 15%;
+  --color-text-secondary: 30 8% 35%;
+  --color-text-tertiary: 30 6% 55%;
+
+  /* border */
+  --color-border: 40 20% 84%;
+
+  /* brand — sky blue */
+  --color-brand: 203 82% 72%;
+  --color-brand-active: 203 82% 60%;
+  --color-brand-primary-hover: 203 82% 62%;
+  --color-brand-primary-active: 203 82% 50%;
+
+  /* secondary button (cream-on-cream slightly darker) */
+  --color-button-secondary: 42 40% 90%;
+  --color-button-secondary-foreground: 30 14% 15%;
+  --color-button-secondary-border: 40 25% 78%;
+  --color-button-secondary-hover: 40 25% 78%;
+  --color-button-secondary-active: 40 30% 65%;
+
+  /* tertiary button (outlined cream) */
+  --color-button-tertiary: 45 50% 96%;
+  --color-button-tertiary-foreground: 30 14% 15%;
+  --color-button-tertiary-border: 40 25% 78%;
+  --color-button-tertiary-shadow: 40 25% 78%;
+  --color-button-tertiary-shadow-active: 40 30% 65%;
+
+  /* block tokens — active node */
+  --color-block-primary-border: 203 82% 60%;
+  --color-block-primary-shadow: 203 82% 62%;
+  --color-block-primary-shadow-deep: 203 82% 50%;
+
+  /* block tokens — locked / neutral node */
+  --color-block-neutral-bg: 42 35% 90%;
+  --color-block-neutral-border: 40 22% 78%;
+  --color-block-neutral-shadow: 40 22% 78%;
+  --color-block-neutral-shadow-deep: 40 25% 66%;
+
+  /* streak accent (warm amber) */
+  --color-streak: 24 92% 60%;
+  --color-streak-soft: 42 95% 70%;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background-color: hsl(var(--color-surface));
+    color: hsl(var(--color-text-primary));
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  button {
+    font-family: inherit;
+  }
+}
+
+@layer utilities {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-nav-safe {
+    padding-top: calc(env(safe-area-inset-top) + 64px);
+  }
+  .pb-nav-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
+  }
+  .inter-font {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+  .figtree-font {
+    font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  }
+  .young-serif-font {
+    font-family: 'Young Serif', ui-serif, Georgia, serif;
+  }
+  .rubik-font {
+    font-family: 'Rubik', ui-sans-serif, sans-serif;
+  }
+  .share-tech-mono-font {
+    font-family: 'Share Tech Mono', ui-monospace, monospace;
+    letter-spacing: 0.04em;
+  }
+  .theme-v2 {
+    color-scheme: light only;
+  }
+}
+
+/* Custom keyframes (also exposed via tailwind theme.extend.animation) */
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes pulse-wiggle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08) rotate(2deg);
+    opacity: 0.85;
+  }
+}
