@@ -9,12 +9,19 @@ export type IllustrationKey =
   | 'brainModes'
   | 'deepLearningCycle';
 
+/** @deprecated Use LessonPage with blocks instead */
 export interface LessonContent {
   page: number;
   totalPages: number;
   question: string;
   subtitle: string;
   illustrationKey?: IllustrationKey;
+}
+
+export interface LessonPage {
+  page: number;
+  totalPages: number;
+  blocks: import('@/types/lesson-blocks').LessonBlock[];
 }
 
 export interface Lesson {
@@ -25,7 +32,7 @@ export interface Lesson {
   estimatedMinutes: number;
   state: LessonState;
   isAdvanced?: boolean;
-  content: LessonContent[];
+  content: LessonPage[];
 }
 
 export interface ReviewSession {

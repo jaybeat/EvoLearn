@@ -1,60 +1,90 @@
-import type { Course, Lesson, LessonContent } from '@/types/course';
+import type { Course, Lesson, LessonPage } from '@/types/course';
 
-const lesson_1_1_content: LessonContent[] = [
+const lesson_1_1_content: LessonPage[] = [
   {
     page: 1,
     totalPages: 7,
-    question: '为什么洗澡时常会突然想到难题的答案？',
-    subtitle: '两种模式',
+    blocks: [
+      { id: 'p1-hero', type: 'hero', title: '为什么洗澡时常会突然想到难题的答案？', subtitle: '两种模式' },
+    ],
   },
   {
     page: 2,
     totalPages: 7,
-    question: '专注模式与发散模式',
-    subtitle: '大脑切换的奥秘',
-    illustrationKey: 'brainModes',
+    blocks: [
+      { id: 'p2-hero', type: 'hero', title: '专注模式与发散模式', subtitle: '大脑切换的奥秘' },
+      { id: 'p2-illust', type: 'illustration', key: 'brainModes' },
+      { id: 'p2-text', type: 'text', body: '专注模式像手电筒，照亮一个点；发散模式像灯笼，照亮一大片区域。', variant: 'callout' },
+    ],
   },
   {
     page: 3,
     totalPages: 7,
-    question: '专注模式：紧密的神经路径',
-    subtitle: '当你聚焦于一个清晰目标',
-    illustrationKey: 'focusedDiffuseMode',
+    blocks: [
+      { id: 'p3-hero', type: 'hero', title: '专注模式：紧密的神经路径', subtitle: '当你聚焦于一个清晰目标' },
+      { id: 'p3-illust', type: 'illustration', key: 'focusedDiffuseMode' },
+      {
+        id: 'p3-quiz',
+        type: 'multipleChoice',
+        question: '以下哪种情况最能体现发散模式？',
+        options: ['全神贯注写代码', '洗澡时突然想到解决方案', '反复检查论文格式', '背诵单词列表'],
+        correctIndex: 1,
+        explanation: '发散模式在放松状态下更容易被激活，比如散步、洗澡或做梦时。这时大脑会在更广泛的区域建立连接，从而产生创意。',
+      },
+    ],
   },
   {
     page: 4,
     totalPages: 7,
-    question: '发散模式:松散的远距连接',
-    subtitle: '当大脑放松,创意涌现',
-    illustrationKey: 'focusedDiffuseMode',
+    blocks: [
+      { id: 'p4-hero', type: 'hero', title: '发散模式:松散的远距连接', subtitle: '当大脑放松,创意涌现' },
+      { id: 'p4-illust', type: 'illustration', key: 'focusedDiffuseMode' },
+      {
+        id: 'p4-card',
+        type: 'knowledgeCard',
+        emoji: '🧠',
+        title: '神经可塑性',
+        body: '大脑具有惊人的可塑性。每当你学习新知识，神经元之间就会形成新的连接。这种物理变化意味着：无论你年龄多大，都可以通过练习变得更聪明。',
+      },
+    ],
   },
   {
     page: 5,
     totalPages: 7,
-    question: '为什么需要在两种模式间切换?',
-    subtitle: '互补,而非对立',
+    blocks: [
+      { id: 'p5-hero', type: 'hero', title: '为什么需要在两种模式间切换?', subtitle: '互补,而非对立' },
+      {
+        id: 'p5-reflection',
+        type: 'reflection',
+        prompt: '回忆一次你在放松状态下突然想到好主意的经历',
+        sampleAnswer: '有一次我在公园散步时，突然想到了一个困扰我三天的 bug 的解决方案。当时我的大脑并没有在主动思考代码，而是在欣赏风景，这就是发散模式的神奇之处。',
+      },
+    ],
   },
   {
     page: 6,
     totalPages: 7,
-    question: '深度学习的循环',
-    subtitle: '专注 → 发散 → 巩固',
-    illustrationKey: 'deepLearningCycle',
+    blocks: [
+      { id: 'p6-hero', type: 'hero', title: '深度学习的循环', subtitle: '专注 → 发散 → 巩固' },
+      { id: 'p6-illust', type: 'illustration', key: 'deepLearningCycle' },
+      { id: 'p6-text', type: 'text', body: '真正的学习发生在两种模式的交替中：先用专注模式吸收新知识，再用发散模式让大脑消化整合，最后通过练习巩固成长期记忆。', variant: 'default' },
+    ],
   },
   {
     page: 7,
     totalPages: 7,
-    question: '今日小结',
-    subtitle: '让大脑两种模式协同工作',
+    blocks: [
+      { id: 'p7-hero', type: 'hero', title: '今日小结', subtitle: '让大脑两种模式协同工作' },
+      { id: 'p7-text', type: 'text', body: '下次遇到难题时，不妨先专注思考，然后起身散步或洗个澡，让发散模式帮你找到答案。', variant: 'tip' },
+    ],
   },
 ];
 
-const placeholderContent = (title: string, hooking: string): LessonContent[] => [
+const placeholderContent = (title: string, hooking: string): LessonPage[] => [
   {
     page: 1,
     totalPages: 1,
-    question: hooking,
-    subtitle: title,
+    blocks: [{ id: 'placeholder-hero', type: 'hero', title: hooking, subtitle: title }],
   },
 ];
 

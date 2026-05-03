@@ -17,3 +17,7 @@ For the course include: title (≤24 chars), subtitle (≤40 chars), description
 achievements (4 items, each {title, body}), dailyGoalMinutes (integer, default 20).
 Return JSON only.
 `.trim();
+
+// TODO: Add a second-stage prompt builder for generating rich lesson page content
+// (blocks: hero, text, multipleChoice, reflection, knowledgeCard, illustration).
+// This should be called after the course outline is approved and stored.
