@@ -1,83 +1,140 @@
-import type { LessonBlock } from '@/types/lesson-blocks';
+import { z } from 'zod';
 
-// ============================================================================
-// Step 1: Narrative Analysis & Pagination
-// ============================================================================
+// ─────────────────────────────────────────────
+// Step 1: 叙事分析与分页
+// ─────────────────────────────────────────────
 
-export interface PageOutline {
-  /** 1-based page number */
-  pageNumber: number;
-  /** Single-sentence theme for this page */
-  theme: string;
-  /** Cognitive goal with Bloom's level */
-  cognitiveGoal: {
-    level: '记忆' | '理解' | '应用' | '分析' | '评估' | '创造';
-    description: string;
-  };
-  /** Emotional arc, e.g. "轻松→烦躁" */
-  emotionalArc: string;
-  /** The single "aha" insight this page delivers */
-  keyInsight: string;
-  /** Which source paragraphs this page covers */
-  sourceParagraphs: string[];
-  /** Estimated reading time in seconds (target: 30–90) */
-  estimatedReadSeconds: number;
-}
+export const CognitiveGoalSchema = z.object({
+  level: z.string(),
+  description: z.string(),
+});
 
-// ============================================================================
-// Step 2: Cognitive Step Decomposition
-// ============================================================================
+export const PageOutlineSchema = z.object({
+  pageNumber: z.number().int().min(1),
+  theme: z.string().min(1),
+  cognitiveGoal: CognitiveGoalSchema,
+  emotionalArc: z.string().min(1),
+  keyInsight: z.string().min(1),
+  sourceParagraphs: z.array(z.string()),
+  estimatedReadSeconds: z.number().int().min(30).max(90),
+});
 
-export type ComponentType =
-  | 'hero'
-  | 'text'
-  | 'knowledgeCard'
-  | 'illustration'
-  | 'interaction_placeholder';
+export const Step1OutputSchema = z.array(PageOutlineSchema).min(1).max(12);
 
-export interface CognitiveStep {
-  stepOrder: number;
-  /** What the user is feeling/thinking at this moment */
-  userMentalState: string;
-  /** What this step aims to achieve pedagogically */
-  contentPurpose: string;
-  /** Which existing component (or placeholder) should render this step */
-  component: ComponentType;
-  /** Proposed content payload (shape depends on component) */
-  proposedContent: Record<string, unknown>;
-  /** If this step needs an interaction, what type? */
-  interactionType?: 'demo' | 'game';
-}
+export type PageOutline = z.infer<typeof PageOutlineSchema>;
 
-export interface PageSteps {
-  pageNumber: number;
-  steps: CognitiveStep[];
-}
+// ─────────────────────────────────────────────
+// Step 2: 认知步骤与组件设计
+// ─────────────────────────────────────────────
 
-// ============================================================================
-// Step 3: Final Lesson Page Design
-// ============================================================================
+export const ComponentTypeSchema = z.enum([
+  'hero',
+  'text',
+  'knowledgeCard',
+  'illustration',
+  'interaction_placeholder',
+  'multipleChoice',
+  'reflection',
+]);
 
-export interface LessonPageDesign {
-  pageNumber: number;
-  totalPages: number;
-  blocks: LessonBlock[];
-}
+export const CognitiveStepSchema = z.object({
+  stepOrder: z.number().int().min(1),
+  userMentalState: z.string().min(1),
+  contentPurpose: z.string().min(1),
+  component: ComponentTypeSchema,
+  proposedContent: z.record(z.unknown()),
+  interactionType: z.enum(['demo', 'game']).optional(),
+});
 
-// ============================================================================
-// Pipeline Meta
-// ============================================================================
+export const Step2PageSchema = z.object({
+  pageNumber: z.number().int().min(1),
+  steps: z.array(CognitiveStepSchema).min(1).max(6),
+});
 
-export interface PipelineOutput {
-  sourceTitle: string;
-  pages: LessonPageDesign[];
-  /** Summary of required but not-yet-implemented interactions */
-  futureInteractions: FutureInteraction[];
-}
+export const Step2OutputSchema = z.array(Step2PageSchema).min(1);
 
-export interface FutureInteraction {
-  id: string;
-  type: 'demo' | 'game';
-  pageNumber: number;
-  description: string;
-}
+export type CognitiveStep = z.infer<typeof CognitiveStepSchema>;
+
+// ─────────────────────────────────────────────
+// Step 3: 交互与检测设计（接近最终 LessonBlock 结构）
+// ─────────────────────────────────────────────
+
+export const Step3HeroBlockSchema = z.object({
+  type: z.literal('hero'),
+  title: z.string().min(1),
+  subtitle: z.string().min(1),
+});
+
+export const Step3TextBlockSchema = z.object({
+  type: z.literal('text'),
+  body: z.string().min(1),
+  variant: z.enum(['default', 'callout', 'tip']).optional(),
+});
+
+export const Step3KnowledgeCardBlockSchema = z.object({
+  type: z.literal('knowledgeCard'),
+  emoji: z.string().min(1).max(4),
+  title: z.string().min(1),
+  body: z.string().min(1),
+});
+
+export const Step3IllustrationBlockSchema = z.object({
+  type: z.literal('illustration'),
+  key: z.string().min(1),
+});
+
+export const Step3MultipleChoiceBlockSchema = z.object({
+  type: z.literal('multipleChoice'),
+  question: z.string().min(1),
+  options: z.array(z.string()).min(2).max(4),
+  correctIndex: z.number().int().min(0),
+  explanation: z.string().min(1),
+});
+
+export const Step3ReflectionBlockSchema = z.object({
+  type: z.literal('reflection'),
+  prompt: z.string().min(1),
+  sampleAnswer: z.string().optional(),
+});
+
+export const Step3SteppedDemoBlockSchema = z.object({
+  type: z.literal('steppedDemo'),
+  title: z.string().min(1),
+  visualizerType: z.enum(['array', 'tree']),
+  steps: z.array(
+    z.object({
+      narration: z.string().min(1),
+      state: z.record(z.unknown()),
+    }),
+  ).min(1),
+});
+
+export const Step3BlockSchema = z.union([
+  Step3HeroBlockSchema,
+  Step3TextBlockSchema,
+  Step3KnowledgeCardBlockSchema,
+  Step3IllustrationBlockSchema,
+  Step3MultipleChoiceBlockSchema,
+  Step3ReflectionBlockSchema,
+  Step3SteppedDemoBlockSchema,
+]);
+
+export const LessonPageDesignSchema = z.object({
+  pageNumber: z.number().int().min(1),
+  blocks: z.array(Step3BlockSchema).min(1).max(8),
+});
+
+export const Step3OutputSchema = z.array(LessonPageDesignSchema).min(1);
+
+export type LessonPageDesign = z.infer<typeof LessonPageDesignSchema>;
+
+// ─────────────────────────────────────────────
+// Pipeline Input
+// ─────────────────────────────────────────────
+
+export const GenerateLessonInputSchema = z.object({
+  sourceText: z.string().min(1),
+  lessonTitle: z.string().optional(),
+});
+
+export type GenerateLessonInput = z.infer<typeof GenerateLessonInputSchema>;

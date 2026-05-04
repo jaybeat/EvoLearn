@@ -30,14 +30,43 @@ Node engine: `>=20.11`. ESM project (`"type": "module"`).
 - `progress-store.ts` — `useProgressStore`, persisted (`evolearn:progress`), maps `lessonId → page`.
 - `ui-store.ts` — `useUIStore`, ephemeral (`scrollY` only).
 
-**Important integration gap.** The store layer exists but isn't fully wired in. Pages like `CourseOutline` and `LessonDetail` import `seedCourse` directly from `src/data/seed-course.ts` rather than reading from `useCourseStore`. When editing pages, check whether the data should come from the store or the seed before assuming.
+**Course registry (`src/lib/courses.ts`).** The single source of truth for runtime course/lesson lookup. `allCourses` is a hardcoded array (`[seedCourse, binaryTreeCourse]`). If a new course file is added under `src/data/`, it must be imported and added to this array. Pages never import seed data directly.
+
+**Important integration gap.** The store layer exists but isn't fully wired in. Pages read courses and lessons through `src/lib/courses.ts` (`findCourse`, `findLesson`, `findCourseByLessonId`), which exports a hardcoded `allCourses` array (`[seedCourse, binaryTreeCourse]`). The Zustand `useCourseStore` exists but is **not** the runtime data source for pages. When adding a new course or changing lesson lookup, update `src/lib/courses.ts` — not the pages.
 
 **AI provider layer (`src/lib/ai/`).** Pluggable via the `VITE_AI_PROVIDER` env var (`.env.local` ships with `VITE_AI_PROVIDER=mock`).
-- `generate-course.ts` is the dispatch entry; it routes to `providers/mock.ts` | `providers/anthropic.ts` | `providers/openai.ts`.
-- **Only `mock` works.** It sleeps 800 ms and returns a draft built from `seedCourse`. The `anthropic` and `openai` provider files intentionally throw `'… provider not configured in v1. Set VITE_AI_PROVIDER=mock or wire a server route.'`
-- `prompt.ts` has system/user prompt builders for when a real provider is wired up. Note: the prompt copy says ≤24-char title / 8–10 lessons total, but the Zod schema in `src/types/ai.ts` (`AICourseDraftSchema`) enforces title ≤40 / exactly 4 sections / 4 achievements — **the schema is the authoritative contract**, not the prompt text.
+- `generate-course.ts` is the dispatch entry; it routes to `providers/mock.ts` | `providers/anthropic.ts` | `providers/openai.ts` | `providers/gemini-course.ts`.
+- **`mock` works offline.** It sleeps 800 ms and returns a draft built from `seedCourse`.
+- **`gemini` works when `VITE_GEMINI_API_KEY` is set.** It calls `gemini-2.0-flash` with JSON response mode and validates output against `AICourseDraftSchema`. The `anthropic` and `openai` provider files still intentionally throw `'… provider not configured in v1. Set VITE_AI_PROVIDER=mock or wire a server route.'`
+- `prompt.ts` has system/user prompt builders for course-outline generation. Note: the prompt copy says ≤24-char title / 8–10 lessons total, but the Zod schema in `src/types/ai.ts` (`AICourseDraftSchema`) enforces title ≤40 / exactly 4 sections / 4 achievements — **the schema is the authoritative contract**, not the prompt text.
 
-**Component organization (`src/components/`).** Grouped by feature surface: `primitives/` (cross-cutting building blocks), `chrome/` (app shell — top/bottom nav, sidebar, streak pill), `lessons-map/` (the snake-path lesson map screen), `outline/` (course outline / accordion), `cover/` (course cover hero), `lesson-detail/` (paginated lesson reader). `src/illustrations/` exports SVG-as-component illustrations plus a `renderIllustration(key)` helper keyed by `IllustrationKey` from `src/types/course.ts`.
+**Component organization (`src/components/`).** Grouped by feature surface: `primitives/` (cross-cutting building blocks), `chrome/` (app shell — top/bottom nav, sidebar, streak pill), `lessons-map/` (the snake-path lesson map screen), `outline/` (course outline / accordion), `cover/` (course cover hero), `lesson-detail/` (paginated lesson reader + block renderers), `interactions/` (step controllers), `visualizers/` (array/tree canvases). `src/illustrations/` exports SVG-as-component illustrations plus a `renderIllustration(key)` helper keyed by `IllustrationKey` from `src/types/course.ts`.
+
+**Lesson content blocks.** A `Lesson` stores its content as `content: LessonPage[]` (`src/types/course.ts`). Each `LessonPage` has `blocks: LessonBlock[]`. The block type system lives in `src/types/lesson-blocks.ts` and includes `hero`, `text`, `multipleChoice`, `reflection`, `knowledgeCard`, `illustration`, and `steppedDemo`.
+
+Rendering is dispatched by a plain `switch` in `src/components/lesson-detail/LessonBlockRenderer.tsx`. Individual renderers live in `src/components/lesson-detail/blocks/`. Interactive blocks (`multipleChoice`, `reflection`) receive `interactionState` and `onInteract` callbacks from the page-level state hook.
+
+**Gating logic.** If a page contains interactive blocks, the user must submit answers before advancing. Correctness and completion are computed by `src/lib/lesson/blocks.ts` (`isPageComplete`, `hasInteractiveBlocks`, `canAdvance`). The footer action mode cycles `submit → continue → next → finish` based on these checks.
+
+**Quiz state is ephemeral.** Page-level interaction state is held in `useLessonPageState` (`src/hooks/useLessonPageState.ts`), a simple `useState` keyed by block ID. It resets on every page change; persistence is limited to `progress-store.ts` (tracks `completedPages` per lesson).
+
+**Stepped demos & visualizers.** The `steppedDemo` block embeds a full step sequence inline (no ID lookup). `src/components/interactions/StepPlayer.tsx` is the generic step controller: prev/next/play-pause/reset with a 1400 ms auto-advance interval. It accepts a `visualizer` component prop.
+
+Visualizers are purely presentational:
+- `src/components/visualizers/NumberArray.tsx` — array items with status-driven styling (`normal | highlighted | excluded | inserting | removing`).
+- `src/components/visualizers/TreeCanvas.tsx` — SVG tree with animated nodes/edges.
+
+Step state shapes (`ArrayVisualizerState`, `TreeVisualizerState`) are defined in `src/types/lesson-blocks.ts`. The `binaryTreeCourse` in `src/data/binary-tree-course.ts` is the primary consumer.
+
+**Lesson Designer Pipeline (`src/lib/lesson-designer/`).** A 3-step Gemini-powered pipeline that turns a raw article into fully designed `LessonPage[]` content. This is the **production** side of the content block system (as opposed to the **consumption** side in `lesson-detail/`).
+
+- **`generateLessonPages(input)`** — runs all 3 steps end-to-end and returns `LessonPage[]` ready for storage.
+- **Step 1** (`step1-paginate.ts`) — Narrative analysis & pagination. Splits the article into `PageOutline[]` by cognitive leap points, ensuring one `keyInsight` per page and 30–90s reading time.
+- **Step 2** (`step2-components.ts`) — Cognitive step & component design. Maps each page into 3–5 `CognitiveStep`s, selecting components (`hero`/`text`/`knowledgeCard`/`illustration`/`interaction_placeholder`) based on user mental state.
+- **Step 3** (`step3-interactions.ts`) — Interaction & assessment design. Converts steps into concrete `LessonBlock`s, including `multipleChoice`, `reflection`, and `steppedDemo` blocks with full `narration` + `state` arrays.
+- **`formatter.ts`** — Post-processor that assigns deterministic `id`s, fills `totalPages`, and casts AI-generated blocks into the strict `LessonBlock` union.
+- **Prompts** live in `prompts.ts`; Zod schemas for validation live in `types.ts`. Each step calls `callGemini()` (`src/lib/ai/providers/gemini.ts`) with `gemini-2.0-flash` and `responseMimeType: 'application/json'`.
+- **Individual step functions** (`runStep1`, `runStep2`, `runStep3`) are also exported for manual review workflows.
 
 **Toast feedback.** Use `import { toast } from 'sonner'`. The single `<Toaster>` host lives in `src/App.tsx` (top-center, light theme, themed via the v2 CSS vars). Don't mount additional `<Toaster>` instances.
 
