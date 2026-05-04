@@ -6,10 +6,12 @@ import { MobileBottomNav } from '@/components/chrome/MobileBottomNav';
 import { MobileTopNav } from '@/components/chrome/MobileTopNav';
 import { Mascot } from '@/components/lessons-map/Mascot';
 import { toast } from 'sonner';
-import { seedCourse } from '@/data/seed-course';
+import { useParams } from 'react-router-dom';
+import { findCourse } from '@/lib/courses';
 
 export const LessonsMap = () => {
-  const course = seedCourse;
+  const { id } = useParams<{ id: string }>();
+  const course = findCourse(id) ?? findCourse('learning-how-to-learn')!;
 
   return (
     <div className="theme-v2 inter-font min-h-screen bg-surface">

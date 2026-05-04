@@ -4,12 +4,12 @@ import { ChunkyButton } from '@/components/primitives/ChunkyButton';
 import { Icon } from '@/components/primitives/Icon';
 import { AchievementList } from '@/components/cover/AchievementList';
 import { CoverHeroImage } from '@/components/cover/CoverHeroImage';
-import { seedCourse } from '@/data/seed-course';
+import { findCourse } from '@/lib/courses';
 
 export const CourseCover = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const course = seedCourse;
+  const course = findCourse(id) ?? findCourse('learning-how-to-learn')!;
   const courseId = id ?? course.id;
 
   return (

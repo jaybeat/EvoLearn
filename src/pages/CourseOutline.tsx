@@ -7,12 +7,12 @@ import { AccordionSection } from '@/components/outline/AccordionSection';
 import { LessonAccordionItem } from '@/components/outline/LessonAccordionItem';
 import { SourceCard } from '@/components/outline/SourceCard';
 import { StatPills } from '@/components/outline/StatPills';
-import { seedCourse } from '@/data/seed-course';
+import { findCourse } from '@/lib/courses';
 
 export const CourseOutline = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
-  const course = seedCourse;
+  const course = findCourse(id) ?? findCourse('learning-how-to-learn')!;
   const isDraft = !id;
 
   const handleCreate = () => {
@@ -54,7 +54,7 @@ export const CourseOutline = () => {
               key={section.id}
               number={section.number}
               title={section.title}
-              defaultOpen={idx === 0}
+              defaultOpen={idx === 0 || idx === course.sections.length - 1}
             >
               {section.lessons.map((lesson) => (
                 <LessonAccordionItem

@@ -6,17 +6,13 @@ import { LessonNavFooter } from '@/components/lesson-detail/LessonNavFooter';
 import { LessonTopBar } from '@/components/lesson-detail/LessonTopBar';
 import { useLessonPageState } from '@/hooks/useLessonPageState';
 import { isPageComplete, hasInteractiveBlocks, canAdvance } from '@/lib/lesson/blocks';
-import { seedCourse } from '@/data/seed-course';
+import { findLesson, findCourseByLessonId } from '@/lib/courses';
 import type { Lesson } from '@/types/course';
 import type { FooterMode } from '@/components/lesson-detail/LessonNavFooter';
 
-const findLesson = (lessonId: string | undefined): Lesson | undefined => {
+const getLesson = (lessonId: string | undefined): Lesson | undefined => {
   if (!lessonId) return undefined;
-  for (const section of seedCourse.sections) {
-    const found = section.lessons.find((l) => l.id === lessonId);
-    if (found) return found;
-  }
-  return undefined;
+  return findLesson(lessonId);
 };
 
 export const LessonDetail = () => {
@@ -24,7 +20,7 @@ export const LessonDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [params, setParams] = useSearchParams();
 
-  const lesson = useMemo(() => findLesson(id), [id]);
+  const lesson = useMemo(() => getLesson(id), [id]);
   const totalPages = lesson?.content.length ?? 1;
   const pageParam = Number(params.get('page')) || 1;
   const page = Math.min(Math.max(pageParam, 1), totalPages);
@@ -94,7 +90,10 @@ export const LessonDetail = () => {
 
     // 已提交或无非交互块，执行翻页
     if (page < totalPages) setPage(page + 1);
-    else navigate(`/courses/${seedCourse.id}/lessons`);
+    else {
+      const course = findCourseByLessonId(id);
+      navigate(`/courses/${course?.id ?? 'learning-how-to-learn'}/lessons`);
+    }
   };
 
   return (
@@ -102,7 +101,10 @@ export const LessonDetail = () => {
       <LessonTopBar
         totalPages={totalPages}
         currentPage={page}
-        onClose={() => navigate(`/courses/${seedCourse.id}/lessons`)}
+        onClose={() => {
+          const course = findCourseByLessonId(id);
+          navigate(`/courses/${course?.id ?? 'learning-how-to-learn'}/lessons`);
+        }}
       />
 
       <main className="flex-1 px-4 pb-[120px] pt-[88px]">

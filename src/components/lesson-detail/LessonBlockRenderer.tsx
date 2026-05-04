@@ -5,6 +5,9 @@ import { MultipleChoiceBlock } from './blocks/MultipleChoiceBlock';
 import { ReflectionBlock } from './blocks/ReflectionBlock';
 import { KnowledgeCardBlock } from './blocks/KnowledgeCardBlock';
 import { IllustrationBlock } from './blocks/IllustrationBlock';
+import { StepPlayer } from '@/components/interactions/StepPlayer';
+import { NumberArray } from '@/components/visualizers/NumberArray';
+import { TreeCanvas } from '@/components/visualizers/TreeCanvas';
 
 export interface LessonBlockRendererProps {
   block: LessonBlock;
@@ -44,6 +47,14 @@ export const LessonBlockRenderer = ({ block, interactionState, onInteract }: Les
       return <KnowledgeCardBlock emoji={block.emoji} title={block.title} body={block.body} />;
     case 'illustration':
       return <IllustrationBlock illustrationKey={block.key} />;
+    case 'steppedDemo':
+      return (
+        <StepPlayer
+          title={block.title}
+          steps={block.steps}
+          visualizer={block.visualizerType === 'array' ? NumberArray : TreeCanvas}
+        />
+      );
     default:
       return null;
   }

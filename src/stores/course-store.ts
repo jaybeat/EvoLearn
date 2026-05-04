@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Course } from '@/types/course';
-import { seedCourse } from '@/data/seed-course';
+import { allCourses } from '@/lib/courses';
 
 interface CourseState {
   courses: Course[];
@@ -13,8 +13,8 @@ interface CourseState {
 export const useCourseStore = create<CourseState>()(
   persist(
     (set) => ({
-      courses: [seedCourse],
-      activeCourseId: seedCourse.id,
+      courses: allCourses,
+      activeCourseId: allCourses[0].id,
       setActiveCourse: (id) => set({ activeCourseId: id }),
       addCourse: (course) =>
         set((s) => ({
