@@ -126,17 +126,20 @@ Visualizers are purely presentational:
 - `src/components/visualizers/NumberArray.tsx` — array items with status-driven styling (`normal | highlighted | excluded | inserting | removing`).
 - `src/components/visualizers/TreeCanvas.tsx` — SVG tree with animated nodes/edges.
 
-Step state shapes (`ArrayVisualizerState`, `TreeVisualizerState`) are defined in `src/types/lesson-blocks.ts`. The `binaryTreeCourse` in `src/data/binary-tree-course.ts` is the primary consumer.
+Step state shapes (`ArrayVisualizerState`, `TreeVisualizerState`) are defined in `src/types/lesson-blocks.ts`. The `binaryTreeCourse` in `src/data/binary-tree-course.ts` is the primary consumer. It has been restructured into **3 lessons** (1.1 二叉搜索树的诞生 — completed, 1.2 删除的艺术 — placeholder, 1.3 当树失去平衡 — placeholder) as a case study for the lesson-split criteria documented in `COURSE_DESIGN.md`.
 
-**Lesson Designer Pipeline (`src/lib/lesson-designer/`).** A 3-step Gemini-powered pipeline that turns a raw article into fully designed `LessonPage[]` content. This is the **production** side of the content block system (as opposed to the **consumption** side in `lesson-detail/`).
+**Lesson Designer Pipeline (`src/lib/lesson-designer/`).** A Gemini-powered pipeline that turns a raw article into fully designed `LessonPage[]` content. This is the **production** side of the content block system (as opposed to the **consumption** side in `lesson-detail/`).
 
-- **`generateLessonPages(input)`** — runs all 3 steps end-to-end and returns `LessonPage[]` ready for storage.
+- **`generateLessonPages(input)`** — runs the pipeline end-to-end and returns `LessonPage[]` ready for storage.
 - **Step 1** (`step1-paginate.ts`) — Narrative analysis & pagination. Splits the article into `PageOutline[]` by cognitive leap points, ensuring one `keyInsight` per page and 30–90s reading time.
+- **Step 1.5** (`step1b-lesson-split.ts`) — **Lesson split analysis**. Analyzes the paginated result to determine whether the content should form 1 lesson or multiple lessons, based on 5 criteria: cognitive arc completeness, mental model shift, achievement mapping, hookingQuestion independence, and attention window. Outputs `LessonGroup[]`.
 - **Step 2** (`step2-components.ts`) — Cognitive step & component design. Maps each page into 3–5 `CognitiveStep`s, selecting components (`hero`/`text`/`knowledgeCard`/`illustration`/`interaction_placeholder`) based on user mental state.
 - **Step 3** (`step3-interactions.ts`) — Interaction & assessment design. Converts steps into concrete `LessonBlock`s, including `multipleChoice`, `reflection`, and `steppedDemo` blocks with full `narration` + `state` arrays.
 - **`formatter.ts`** — Post-processor that assigns deterministic `id`s, fills `totalPages`, and casts AI-generated blocks into the strict `LessonBlock` union.
 - **Prompts** live in `prompts.ts`; Zod schemas for validation live in `types.ts`. Each step calls `callGemini()` (`src/lib/ai/providers/gemini.ts`) with `gemini-2.0-flash` and `responseMimeType: 'application/json'`.
-- **Individual step functions** (`runStep1`, `runStep2`, `runStep3`) are also exported for manual review workflows.
+- **Individual step functions** (`runStep1`, `runStep1b`, `runStep2`, `runStep3`) are also exported for manual review workflows.
+
+**Course design principles** are documented in `COURSE_DESIGN.md` at repo root, including the lesson split criteria and the binary tree course case study.
 
 **Toast feedback.** Use `import { toast } from 'sonner'`. The single `<Toaster>` host lives in `src/App.tsx` (top-center, light theme, themed via the v2 CSS vars). Don't mount additional `<Toaster>` instances.
 
