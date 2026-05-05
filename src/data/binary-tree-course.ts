@@ -400,9 +400,128 @@ const lesson_1_1_content: LessonPage[] = [
     page: 6,
     totalPages: 7,
     blocks: [
-      { id: 'bt-p6-hero', type: 'hero', title: '改起来也快', subtitle: '插入和删除只需要改指针' },
-      { id: 'bt-p6-text1', type: 'text', body: '插入 43：按同样的路径走：50 → 30 → 40。走到 40 的右边发现是空的，把 43 挂在那儿就完了。没有挪动任何其他节点。顺着一条路径走下来，最后改一个指针。O(log N)。', variant: 'default' },
-      { id: 'bt-p6-text2', type: 'text', body: '删除也类似——找到它（O(log N)），处理一下它的孩子怎么接管它的位置，全程不需要挪整片数据。我们终于做到了：查询 O(log N)，插入 O(log N)，删除 O(log N)。三件事全都快。', variant: 'default' },
+      { id: 'bt-p6-hero', type: 'hero', title: '插入也只需改一个指针', subtitle: '顺着查询路径走到底，挂上去就行' },
+      {
+        id: 'bt-p6-demo',
+        type: 'steppedDemo',
+        title: 'BST 插入演示',
+        visualizerType: 'tree',
+        steps: [
+          {
+            narration: '在 BST 中插入 43。从根节点 50 开始。',
+            state: {
+              nodes: [
+                { id: 'n50', value: 50, x: 50, y: 12, status: 'normal' },
+                { id: 'n30', value: 30, x: 25, y: 32, status: 'normal' },
+                { id: 'n70', value: 70, x: 75, y: 32, status: 'normal' },
+                { id: 'n20', value: 20, x: 12, y: 52, status: 'normal' },
+                { id: 'n40', value: 40, x: 38, y: 52, status: 'normal' },
+                { id: 'n60', value: 60, x: 62, y: 52, status: 'normal' },
+                { id: 'n80', value: 80, x: 88, y: 52, status: 'normal' },
+              ],
+              edges: [
+                { from: 'n50', to: 'n30', status: 'normal' },
+                { from: 'n50', to: 'n70', status: 'normal' },
+                { from: 'n30', to: 'n20', status: 'normal' },
+                { from: 'n30', to: 'n40', status: 'normal' },
+                { from: 'n70', to: 'n60', status: 'normal' },
+                { from: 'n70', to: 'n80', status: 'normal' },
+              ],
+            },
+          },
+          {
+            narration: '43 比 50 小，走左边。',
+            state: {
+              nodes: [
+                { id: 'n50', value: 50, x: 50, y: 12, status: 'highlighted' },
+                { id: 'n30', value: 30, x: 25, y: 32, status: 'normal' },
+                { id: 'n70', value: 70, x: 75, y: 32, status: 'normal' },
+                { id: 'n20', value: 20, x: 12, y: 52, status: 'normal' },
+                { id: 'n40', value: 40, x: 38, y: 52, status: 'normal' },
+                { id: 'n60', value: 60, x: 62, y: 52, status: 'normal' },
+                { id: 'n80', value: 80, x: 88, y: 52, status: 'normal' },
+              ],
+              edges: [
+                { from: 'n50', to: 'n30', status: 'highlighted' },
+                { from: 'n50', to: 'n70', status: 'normal' },
+                { from: 'n30', to: 'n20', status: 'normal' },
+                { from: 'n30', to: 'n40', status: 'normal' },
+                { from: 'n70', to: 'n60', status: 'normal' },
+                { from: 'n70', to: 'n80', status: 'normal' },
+              ],
+            },
+          },
+          {
+            narration: '43 比 30 大，走右边。',
+            state: {
+              nodes: [
+                { id: 'n50', value: 50, x: 50, y: 12, status: 'normal' },
+                { id: 'n30', value: 30, x: 25, y: 32, status: 'highlighted' },
+                { id: 'n70', value: 70, x: 75, y: 32, status: 'normal' },
+                { id: 'n20', value: 20, x: 12, y: 52, status: 'normal' },
+                { id: 'n40', value: 40, x: 38, y: 52, status: 'normal' },
+                { id: 'n60', value: 60, x: 62, y: 52, status: 'normal' },
+                { id: 'n80', value: 80, x: 88, y: 52, status: 'normal' },
+              ],
+              edges: [
+                { from: 'n50', to: 'n30', status: 'highlighted' },
+                { from: 'n50', to: 'n70', status: 'normal' },
+                { from: 'n30', to: 'n20', status: 'normal' },
+                { from: 'n30', to: 'n40', status: 'highlighted' },
+                { from: 'n70', to: 'n60', status: 'normal' },
+                { from: 'n70', to: 'n80', status: 'normal' },
+              ],
+            },
+          },
+          {
+            narration: '43 比 40 大，往右——空的！这就是 43 该待的位置。',
+            state: {
+              nodes: [
+                { id: 'n50', value: 50, x: 50, y: 12, status: 'normal' },
+                { id: 'n30', value: 30, x: 25, y: 32, status: 'normal' },
+                { id: 'n70', value: 70, x: 75, y: 32, status: 'normal' },
+                { id: 'n20', value: 20, x: 12, y: 52, status: 'normal' },
+                { id: 'n40', value: 40, x: 38, y: 52, status: 'highlighted' },
+                { id: 'n60', value: 60, x: 62, y: 52, status: 'normal' },
+                { id: 'n80', value: 80, x: 88, y: 52, status: 'normal' },
+              ],
+              edges: [
+                { from: 'n50', to: 'n30', status: 'highlighted' },
+                { from: 'n50', to: 'n70', status: 'normal' },
+                { from: 'n30', to: 'n20', status: 'normal' },
+                { from: 'n30', to: 'n40', status: 'highlighted' },
+                { from: 'n70', to: 'n60', status: 'normal' },
+                { from: 'n70', to: 'n80', status: 'normal' },
+              ],
+            },
+          },
+          {
+            narration: '把 43 挂上去，只改了 40 的一个右指针。其他节点纹丝不动。',
+            state: {
+              nodes: [
+                { id: 'n50', value: 50, x: 50, y: 12, status: 'normal' },
+                { id: 'n30', value: 30, x: 25, y: 32, status: 'normal' },
+                { id: 'n70', value: 70, x: 75, y: 32, status: 'normal' },
+                { id: 'n20', value: 20, x: 12, y: 52, status: 'normal' },
+                { id: 'n40', value: 40, x: 38, y: 52, status: 'normal' },
+                { id: 'n43', value: 43, x: 50, y: 72, status: 'new' },
+                { id: 'n60', value: 60, x: 62, y: 52, status: 'normal' },
+                { id: 'n80', value: 80, x: 88, y: 52, status: 'normal' },
+              ],
+              edges: [
+                { from: 'n50', to: 'n30', status: 'normal' },
+                { from: 'n50', to: 'n70', status: 'normal' },
+                { from: 'n30', to: 'n20', status: 'normal' },
+                { from: 'n30', to: 'n40', status: 'normal' },
+                { from: 'n40', to: 'n43', status: 'highlighted' },
+                { from: 'n70', to: 'n60', status: 'normal' },
+                { from: 'n70', to: 'n80', status: 'normal' },
+              ],
+            },
+          },
+        ],
+      },
+      { id: 'bt-p6-text1', type: 'text', body: '插入 = 查询路径 + 一次指针修改。查询走了几步，插入就走几步，最后只改一个指针。O(log N)。', variant: 'default' },
       { id: 'bt-p6-quiz', type: 'multipleChoice', question: '在 BST 中插入一个新节点，最坏情况下需要修改几个指针？', options: ['1个', 'log N 个', 'N 个', 'N/2 个'], correctIndex: 0, explanation: '顺着一条路径走下来，最后只改一个指针。O(log N) 是查找路径的长度，不是修改的指针数。' },
     ],
   },
@@ -417,6 +536,68 @@ const lesson_1_1_content: LessonPage[] = [
       { id: 'bt-p7-text1', type: 'text', body: '这些性质不限于"二叉"和"大小比较"。分叉数 k 可以是任意值；"有序"可以按字符切、按区间切、按颜色切——只要你能定一条规则告诉我"目标在哪个分支"。', variant: 'default' },
       { id: 'bt-p7-reflection', type: 'reflection', prompt: '想想你日常用的文件系统、数据库索引、DOM 树——它们符合"分叉的有序决策"这个模型吗？如果符合，它的"分叉"是什么？"有序"是什么？', sampleAnswer: '文件系统的目录结构就是一种树：分叉是子文件夹/文件，有序是文件名的字典序或路径规则。' },
       { id: 'bt-p7-quiz', type: 'multipleChoice', question: '以下哪种情况会让 BST 失去 O(log N) 的查询效率？', options: ['节点值重复', '插入顺序为 20,30,40,50,60,70,80', '删除根节点', '树中有负数'], correctIndex: 1, explanation: '按升序插入会让 BST 退化成一条链表，失去分叉，回到 O(N)。' },
+    ],
+  },
+];
+
+const lesson_1_2_content: LessonPage[] = [
+  {
+    page: 1,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l2-p1-hero', type: 'hero', title: '删除叶子节点', subtitle: '最简单的情况' },
+    ],
+  },
+  {
+    page: 2,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l2-p2-hero', type: 'hero', title: '删除只有一个孩子的节点', subtitle: '孩子接替位置' },
+    ],
+  },
+  {
+    page: 3,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l2-p3-hero', type: 'hero', title: '删除有两个孩子的节点', subtitle: '找后继节点替代' },
+    ],
+  },
+  {
+    page: 4,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l2-p4-hero', type: 'hero', title: '动态查找的完胜', subtitle: 'BST 与数组的总对比' },
+    ],
+  },
+];
+
+const lesson_1_3_content: LessonPage[] = [
+  {
+    page: 1,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l3-p1-hero', type: 'hero', title: '当树变成链表', subtitle: '顺序插入的灾难' },
+    ],
+  },
+  {
+    page: 2,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l3-p2-hero', type: 'hero', title: '分叉均匀性决定性能', subtitle: '树高才是瓶颈' },
+    ],
+  },
+  {
+    page: 3,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l3-p3-hero', type: 'hero', title: '自平衡树', subtitle: 'AVL 树与红黑树' },
+    ],
+  },
+  {
+    page: 4,
+    totalPages: 4,
+    blocks: [
+      { id: 'bt-l3-p4-hero', type: 'hero', title: '树的进化没有终点', subtitle: '从 BST 到平衡树，再到 B 树' },
     ],
   },
 ];
@@ -441,11 +622,11 @@ export const binaryTreeCourse: Course = {
     },
     {
       title: '建立 BST 心智模型',
-      body: '能徒手推导查询、插入、删除的路径',
+      body: '能徒手推导查询和插入的路径',
     },
     {
-      title: '发现数组与树的 trade-off',
-      body: '理解连续存储与指针组织各自的优劣',
+      title: '掌握 BST 的三类删除',
+      body: '理解叶子、单孩子、双孩子三种删除场景',
     },
     {
       title: '抽象出树的通用机制',
@@ -462,11 +643,29 @@ export const binaryTreeCourse: Course = {
         {
           id: 'bst-1-1',
           number: '1.1',
-          title: '二叉树的故事',
-          hookingQuestion: '怎么在一堆数里快速找一个数?',
+          title: '二叉搜索树的诞生',
+          hookingQuestion: '怎么在一堆数里快速找一个数，还能随时改？',
           estimatedMinutes: 8,
           state: 'current',
           content: lesson_1_1_content,
+        },
+        {
+          id: 'bst-1-2',
+          number: '1.2',
+          title: '删除的艺术与动态查找的完胜',
+          hookingQuestion: 'BST 删一个节点会发生什么？',
+          estimatedMinutes: 7,
+          state: 'locked',
+          content: lesson_1_2_content,
+        },
+        {
+          id: 'bst-1-3',
+          number: '1.3',
+          title: '当树失去平衡',
+          hookingQuestion: '如果数据按顺序插入，BST 还快吗？',
+          estimatedMinutes: 6,
+          state: 'locked',
+          content: lesson_1_3_content,
         },
       ],
     },

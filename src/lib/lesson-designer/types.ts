@@ -24,6 +24,30 @@ export const Step1OutputSchema = z.array(PageOutlineSchema).min(1).max(12);
 export type PageOutline = z.infer<typeof PageOutlineSchema>;
 
 // ─────────────────────────────────────────────
+// Step 1.5: 分课分析
+// ─────────────────────────────────────────────
+
+export const LessonGroupSchema = z.object({
+  lessonIndex: z.number().int().min(1),
+  lessonTitle: z.string().min(1),
+  hookingQuestion: z.string().min(1),
+  estimatedMinutes: z.number().int().min(3).max(10),
+  achievementTitle: z.string().min(1),
+  achievementBody: z.string().min(1),
+  pageNumbers: z.array(z.number().int().min(1)).min(1).max(8),
+  narrativeArc: z.string().min(1),
+  splitReason: z.string().min(1),
+});
+
+export const Step1bOutputSchema = z.object({
+  recommendedLessonCount: z.number().int().min(1).max(5),
+  overallReasoning: z.string().min(1),
+  lessons: z.array(LessonGroupSchema).min(1),
+});
+
+export type LessonGroup = z.infer<typeof LessonGroupSchema>;
+
+// ─────────────────────────────────────────────
 // Step 2: 认知步骤与组件设计
 // ─────────────────────────────────────────────
 

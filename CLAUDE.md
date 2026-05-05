@@ -1,6 +1,76 @@
-# CLAUDE.md
+# EvoLearn — Project Context for Claude Code
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## What This Project Is
+
+EvoLearn 是一个对抗"知识点列表式学习"的进化式课程产品。
+
+学习者——无论是学生还是工作中的人——在学一个新领域时，最常见的困境是：知识点像海洋，不知道从哪学起，也容易陷在细节里看不到全貌。EvoLearn 的回答是：每个主题都有一个**核心机制**，所有看似复杂的知识点都是这个核心机制为了解决新问题而**演化**出来的变体。把这条演化路径还原出来，学习者就能形成对核心概念的直观理解，而不是背一堆并列的事实。
+
+每门课的内容形态是：**沿"核心机制 → 进化分支"组织的学习地图**，每节课是分页的短课，混合图文、展示型交互、游戏型交互、多种类型的题目。教学方式以**归纳**为主——让用户先感受具体问题，再在解决问题的过程中归纳出概念。
+
+## Core Value Proposition
+
+**让学习者沿知识的演化路径走一遍——先感受问题，再归纳概念，再看它如何进化出变体——而不是面对一份扁平的知识点清单。**
+
+## Where This Project Is Going
+
+当前阶段：**MVP**。MVP 的唯一目标是端到端跑通一条路径——
+
+1. **把 AI pipeline 从代码外搬进代码内**：让 `src/lib/ai/providers/anthropic.ts` 真的能用，把"原始材料 → Course/Lesson/Page/Block 结构化数据"这条流水线在产品里跑通。
+2. **用这条 pipeline 把已有蓝本课程灌进产品**：5–6 节已经写好文字稿、但还没结构化进 `src/data/` 的蓝本课程，全部走 pipeline 转成代码里的课程数据。
+3. **课程地图能让用户从头学到尾**：前端足以支撑一个真实学习者把这些课从头学到尾，进度、互动、成就这些核心反馈循环跑通。
+
+**MVP 之外的所有事都暂不规划**。MVP 跑通后再回头讨论下一阶段方向。
+
+## Key Decisions (Settled)
+
+这些是已经定下来、不要反复挑战的决策：
+
+- **AI pipeline 是产品的核心基础设施，不是可选功能**。即使产品永远不开放给终端用户上传材料生成课程，AI pipeline 也必须存在——因为人工把文字稿切成 lesson/page/block、配可视化 spec 是不现实的。AI 首先是创作者（目前是项目作者本人）的内容生产流水线，开放给终端用户是后期的事。
+- **进化式课程形态已经验证过，不要再质疑这个产品形态**。已有 5–6 节手写蓝本课程作为蓝本，AI pipeline 也在代码外跑通过。当前不确定性在"集成"和"规模化"，不在"形态对不对"。
+- **教学方式以归纳为主**。先给具体问题/场景，再让用户归纳出概念——不要在 lesson 设计上反过来（先抛定义再举例）。这是产品的核心教学法，不是可调风格。
+- **`AICourseDraftSchema`（`src/types/ai.ts`）是 AI 生成的权威契约，prompt 文案不是**。当 prompt 文案和 Schema 冲突时，以 Schema 为准。
+- **页面通过 `src/lib/courses.ts` 读课程数据，不通过 Zustand store**。`useCourseStore` 存在但不是运行时数据源。新增课程时改 `allCourses` 数组，不改 pages。
+- **v2 设计系统是唯一的设计系统**。语义化 Tailwind 类（`bg-surface`、`text-text-secondary` 等）是默认选择，CSS 变量在 `src/index.css`。不要引入 hex 颜色，不要绕过设计 token。
+- **ChunkyButton 是主要 CTA primitive**，不要为了"更现代"或"更简洁"就替换它。它的视觉签名（堆叠 drop-shadow、hover 抬升、active 折叠）是设计语言的一部分。
+- **Mobile-first**。所有布局先按移动端视口设计，iOS safe-area 用已有的 `.safe-area-top` / `.pb-nav-safe` 工具类。
+- **种子内容是 zh-CN，不要在重构时把中文字符串"自动翻译"成英文**。
+
+## Known Tech Debt
+
+已知的债，写出来是为了让 Claude Code 知道这是"已知现状"，不要误以为是"有意设计"，也不要在不相关的工作里顺手"修"它：
+
+- **`src/lib/ai/providers/anthropic.ts` 和 `openai.ts` 当前抛错**。生成 pipeline 的真实实现已经在代码外（外部脚本/notebook）跑通了，但还没搬进仓库。`VITE_AI_PROVIDER=mock` 是当前唯一能用的 provider。把外部 pipeline 集成进 `anthropic.ts` 是 MVP 的关键路径。
+- **5–6 节蓝本课程的文字稿已写好，但还没结构化进 `src/data/`**。仓库里只有 `seedCourse`（Learning How to Learn）和 `binaryTreeCourse`。其他课程要等 AI pipeline 集成后批量灌入。
+- **Zustand store 层（`src/stores/`）存在但 pages 不通过 store 读课程数据**，运行时 source of truth 是 `src/lib/courses.ts` 的 `allCourses` 数组。`useCourseStore` 目前是空架子。这个分裂状态短期不修——MVP 阶段课程数据是只读的，不需要 store 的能力。
+- **`prompt.ts` 的提示词文案和 `AICourseDraftSchema` 不一致**（提示词说 ≤24-char title / 8–10 lessons，Schema 说 ≤40 / 4 sections / 4 achievements）。Schema 是权威契约，prompt 文案需要在 AI pipeline 真正接通时同步修正。
+- **`npm run lint` 当前是坏的**——脚本调 `eslint . --max-warnings 0`，但仓库里没有 ESLint config，`eslint` 也不在 devDependencies。`npm run typecheck` 是当前真正的代码质量门槛。
+- **根目录有 stale 的 `vite.config.js` 和 `vite.config.d.ts`**，权威是 `vite.config.ts`。
+
+## Out of Scope (Don't Build)
+
+MVP 阶段**明确不做**以下方向。即使看起来"做了不亏"或"用户可能想要"，都不要主动建议或顺手实现：
+
+- **社交/社区功能**：评论、讨论区、学习伙伴、排行榜、分享——全部不做。
+- **账号系统 / 云同步 / 后端服务**：当前所有数据走 localStorage，不要建议加用户系统、不要建议引入后端。
+- **付费/订阅**。
+- **SRS / 间隔重复 / Anki 式复习系统**。
+- **学习数据分析 dashboard**：学习时长统计、掌握度热力图、进度报表等，全部不做。
+- **多端**：桌面端布局、平板端适配、原生 App、PWA 安装——MVP 只做 mobile-first web。
+- **多语言 / i18n 框架**：当前内容是 zh-CN，不要引入 i18n 库或抽象。
+- **直接开放给终端用户上传材料生成课程**：这是 post-MVP 方向，MVP 阶段 AI pipeline 只服务于创作者（项目作者本人）的内容生产，不暴露给终端用户。
+- **测试框架**：没有 Vitest/Jest，没有 `*.test.*` 文件，没有 test script。不要建议"加个测试验证一下"作为工作流的一部分。如果某段逻辑确实需要测试覆盖，先和我讨论是否要引入测试基础设施。
+
+## Working Style with Claude Code
+
+- **修改前先看 `Key Decisions` 和 `Out of Scope`**。如果建议会撞上其中一条，先指出来再讨论，不要默默绕过去。
+- **不要建议引入新依赖来解决可以用现有栈解决的问题**。当前栈（React 18 + Zustand + Zod + Sonner + Tailwind + lucide-react）已经覆盖绝大多数需求，新增依赖前先确认现有工具不够用。
+- **不要建议加测试作为验证手段**。验证手段是 `npm run typecheck` 和手动跑 `npm run dev`。
+- **不要建议跑 `npm run lint`**——它是坏的，跑了徒增噪声。
+- **遇到中文内容/注释/UI 文案不要自动翻译成英文**。
+- **新增课程时改 `src/lib/courses.ts` 的 `allCourses` 数组**，不要改 pages、不要改 store。
+
+---
 
 ## Commands
 

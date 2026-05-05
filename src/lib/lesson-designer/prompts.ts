@@ -67,6 +67,81 @@ ${sourceText}
 }
 
 // ─────────────────────────────────────────────
+// Step 1.5: 分课分析
+// ─────────────────────────────────────────────
+
+export function buildStep1bSystemPrompt(): string {
+  return `
+你是一位拥有 20 年经验的课程架构专家，擅长分析分页后的内容应该映射到一节课还是多节课。
+${JSON_RULE}
+`.trim();
+}
+
+export function buildStep1bUserPrompt(
+  pageOutlines: PageOutline[],
+  sourceText: string,
+): string {
+  return `
+原文全文：
+"""
+${sourceText}
+"""
+
+Step 1 已经将原文按认知跃迁点拆分为以下页面：
+
+${JSON.stringify(pageOutlines, null, 2)}
+
+你的任务是分析这些页面应该组成 **1 个还是多个 lessons**，并给出分课方案。
+
+## 判断标准（按优先级排序）
+
+### 标准 1：认知弧线完整性（最重要）
+一个 lesson 必须包含一个完整的"问题 → 感受 → 归纳 → 验证"闭环。
+- 检查每页的 cognitiveGoal 和 emotionalArc，能否连成一条"起承转合"的叙事线？
+- 如果能找出 N 条独立的叙事线，就是 N 个 lessons。
+
+### 标准 2：心智模型跃迁
+如果某处需要学习者从心智模型 A 切换到心智模型 B（如"连续存储"→"指针连接"），且切换后形成了新的独立认知弧线，这是一个分课点。
+
+### 标准 3：成就映射
+每个 lesson 应该对应一个可独立描述的能力。问自己：完成这段内容后，学习者能用一句话描述他获得了什么能力？
+
+### 标准 4：HookingQuestion 独立性
+每节课有且只有一个独立的 hookingQuestion。如果需要多个独立的问题来驱动不同段落，那就是多节课。
+
+### 标准 5：注意力窗口（仲裁标准）
+- 单个 lesson 的页数建议 3-6 页，最多不超过 8 页。
+- 单个 lesson 的 estimatedMinutes 建议 3-8 分钟。
+- 如果以上标准出现分歧，用这个打破僵局。
+
+## 输出格式
+
+{
+  "recommendedLessonCount": 2,
+  "overallReasoning": "内容包含两个独立的认知弧线：第一个弧线从问题出发建立核心机制，第二个弧线验证机制的完备性...",
+  "lessons": [
+    {
+      "lessonIndex": 1,
+      "lessonTitle": "一个概括这节课核心主题的标题（15字以内）",
+      "hookingQuestion": "一个具体、可感受的问题，不是抽象概念",
+      "estimatedMinutes": 8,
+      "achievementTitle": "能力徽章标题（10字以内）",
+      "achievementBody": "一句话描述完成这节课后获得的能力",
+      "pageNumbers": [1, 2, 3, 4, 5],
+      "narrativeArc": "这节课的叙事弧线：问题→尝试→失败→高潮→验证",
+      "splitReason": "为什么从这里切分：前一节课已经建立了核心机制，后面的内容是对机制的完备性验证，属于独立的认知闭环"
+    }
+  ]
+}
+
+注意：
+- 如果 recommendLessonCount 为 1，lessons 数组只有 1 个元素，pageNumbers 包含所有页。
+- 如果 recommendLessonCount 大于 1，每节课的 pageNumbers 必须是连续且不重叠的。
+- 不要为了避免拆分而强行把两个独立认知弧线塞进一节课。
+`.trim();
+}
+
+// ─────────────────────────────────────────────
 // Step 2: 认知步骤与组件设计
 // ─────────────────────────────────────────────
 
